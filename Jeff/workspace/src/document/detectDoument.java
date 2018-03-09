@@ -29,7 +29,7 @@ public class detectDoument {
 			BufferedImage image = ImageIO.read(inputImage);
 			System.out.println("image loading completed");
 			Mat original = Imgcodecs.imread(originalPath);
-
+			/**
 			System.out.println("\nstarting grayscaling");
 			Mat grayscale = original.clone();
 			Imgproc.cvtColor(original, grayscale, Imgproc.COLOR_RGB2GRAY);
@@ -37,7 +37,7 @@ public class detectDoument {
 			createFile(grayPath);
 			Imgcodecs.imwrite(grayPath, grayscale);
 			System.out.println("grayscale conversion completed");
-
+			**/
 			System.out.println("\nstarting contouring of target");
 			Mat blurred = original.clone();
 			contourPath = outputPath + imageName.substring(0, imageName.length()-4) + "Contoured.jpg";
@@ -86,12 +86,17 @@ public class detectDoument {
 			}
 			if (maxId >= 0) {
 				Imgproc.drawContours(original, contours, maxId, new Scalar(255, 0, 0, 0.8), 8);
+				Rect rect = Imgproc.boundingRect(contours.get(maxId));
+				Imgproc.rectangle(original,  rect.tl(), rect.br(), new Scalar(255, 0, 0, 0.8), 4);
+				int mDetectedWidth = rect.width;
+				int mDetectedHeight = rect.height;
 			}
 			createFile(contourPath);
 			Imgcodecs.imwrite(contourPath, original);
 			System.out.println("rectangle contouring completed");
 			
-			System.out.println("retrieving paper rotation");
+			
+			System.out.println("\nprogram ended");
 			
 
 		} catch (Exception e) {
