@@ -9,16 +9,18 @@ import os.path
 
 import rect
 
+inputPath = '../images/inputs/'
+outputPath = '../images/outputs/'
 
 imageName = raw_input("Enter image name: ")
-imagePath = '../images/inputs/' + str(imageName)
+imagePath = inputPath + str(imageName)
 print('importing >> ' + imagePath)
 
 
 if os.path.exists(imagePath):
     print('file found')
     original = cv2.imread(imagePath)
-    original = cv2.resize(original, (1500, 880))
+    #original = cv2.resize(original, (1500, 880))
     print('image read')
     
     backup = original.copy()
@@ -44,11 +46,20 @@ if os.path.exists(imagePath):
     pts2 = np.float32([[0,0],[800,0],[800,800],[0,800]])
     
     M = cv2.getPerspectiveTransform(approx,pts2)
-    dst = cv2.warpPerspective(backup,M,(800,800))
+    dest = cv2.warpPerspective(backup,M,(800,800))
     
     cv2.drawContours(original, [target], -1, (0, 255, 0), 2)
-    dst = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
+    dest = cv2.cvtColor(dest, cv2.COLOR_BGR2GRAY)
     
+    ret, threshold1 = cv2.threshold(dest, 127, 255, cv2.THRESH_BINARY)
+    threshold2 = cv2.adaptiveThreshold(dest, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
+    threhold3 = cv2.adaptiveThreshold(dest, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+    ret2, threshold4 = cv2.threshold(dest, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    
+    print('outputting original ... done')
+    cv2.imwrite(outputPath + 'original_' + imageName, backup)
+    print('outputting grayscale ... done')
+    cv2.imwrite(outputPath + 'grayscale_' + imageName, grayscale)
     
 else:
     print('file not found')
