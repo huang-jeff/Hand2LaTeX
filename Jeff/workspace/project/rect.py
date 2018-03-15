@@ -1,20 +1,21 @@
 '''
-Supporting function to rectify and find the area of the rectangle
+Supporting function to rectify and find the corners of the rectangle
 @author: Jeffrey
 '''
 
 import numpy as np
+import cv2
 
-def rectify(x):
-    x = x.reshape((4,2))
-    xnew = np.zeros((4,2), dtype = np.float32)
+def cornerPoints(corner):
+    corner = corner.reshape((4,2))
+    rect = np.zeros((4,2), dtype = np.float32)
     
-    add = x.sum(1)
-    xnew[0] = x[np.argmin(add)]
-    xnew[2] = x[np.argmax(add)]
+    add = corner.sum(axis = 1)
+    rect[0] = corner[np.argmin(add)]
+    rect[2] = corner[np.argmax(add)]
     
-    diff = np.diff(x, axis = 1)
-    xnew[1] = x[np.argmin(diff)]
-    xnew[3] = x[np.argmax(diff)]
+    diff = np.diff(corner, axis = 1)
+    rect[1] = corner[np.argmin(diff)]
+    rect[3] = corner[np.argmax(diff)]
     
-    return xnew
+    return rect
