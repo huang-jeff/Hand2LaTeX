@@ -9,9 +9,6 @@ findName(string) - extracting file name without file extension to output in a un
 import numpy as np
 import cv2
 from imutils.perspective import order_points
-from matplotlib._path import points_in_path
-from cmath import rect
-from numpy import dstack
 
 def cornerPoints(corner):
     corner = corner.reshape((4,2))
