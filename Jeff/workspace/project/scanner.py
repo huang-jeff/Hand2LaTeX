@@ -6,32 +6,37 @@ Document scanner for extracting rectangular objects from a given image.
 import cv2
 import numpy as np
 import os.path
-
-import rect
+import imutils
+from project import support
 
 inputPath = '../images/inputs/'
 outputPath = '../images/outputs/'
 
-imageName = raw_input("Enter image name: ")
+imageName = input("Enter image name: ")
 imagePath = inputPath + str(imageName)
-print('importing >> ' + imagePath)
+outputPath = outputPath + support.findName(imageName)
+if not os.path.exists(outputPath):
+    os.makedirs(outputPath)
+    
+print(outputPath)
 
+print('importing >> ' + imagePath)
 
 if os.path.exists(imagePath):
     print('file found')
     original = cv2.imread(imagePath)
-    original = cv2.resize(original, (1500, 880))
+    original = imutils.resize(original, height=500)
     print('image read')
-    
     backupOriginal = original.copy()
     
     grayscale = cv2.cvtColor(original, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(grayscale, (5, 5), 0)
+    #blurred = cv2.medianBlur(grayscale, 5)
     
-    edged = cv2.Canny(blurred, 0, 50)
+    edged = cv2.Canny(blurred, 75, 200)
     backupEdged = edged.copy()
     
-    (contours, _) = cv2.findContours(edged, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+    (_, contours, _) = cv2.findContours(edged, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     contours = sorted(contours, key=cv2.contourArea, reverse=True)
     
     for c in contours:
@@ -42,7 +47,7 @@ if os.path.exists(imagePath):
             target = approx 
             break
         
-    approx = rect.cornerPoints(target)
+    approx = support.cornerPoints(target)
     pts2 = np.float32([[0,0],[800,0],[800,800],[0,800]])
     
     M = cv2.getPerspectiveTransform(approx,pts2)
@@ -53,7 +58,7 @@ if os.path.exists(imagePath):
     
     ret, threshold1 = cv2.threshold(dest, 127, 255, cv2.THRESH_BINARY)
     threshold2 = cv2.adaptiveThreshold(dest, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
-    threhold3 = cv2.adaptiveThreshold(dest, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+    threshold3 = cv2.adaptiveThreshold(dest, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
     ret2, threshold4 = cv2.threshold(dest, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     
     print('outputting original ... done')
@@ -68,6 +73,14 @@ if os.path.exists(imagePath):
     cv2.imwrite(outputPath + 'outline_' + imageName, original)
     print('outputting threshold binary ... done')
     cv2.imwrite(outputPath + 'threshold_binary_' + imageName, threshold1)
+    print('outputting threshold mean ... done')
+    cv2.imwrite(outputPath + 'threshold_mean_' + imageName, threshold2)
+    print('outputting threshold gaussian ... done')
+    cv2.imwrite(outputPath + 'threshold_gaussian_' + imageName, threshold3)
+    print('outputting otus\'s ... done')
+    cv2.imwrite(outputPath + 'otsu_' + imageName, threshold4)
+    print('outputting dest ... done')
+    cv2.imwrite(outputPath + 'dest_' + imageName, dest)
     
 else:
     print('file not found')
