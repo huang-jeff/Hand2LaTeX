@@ -1,106 +1,224 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent">
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/scrollView2"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical" >
-        <TextView android:id="@+id/text1"
+        android:layout_height="match_parent">
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/text1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a TextView" />
+
+            <Button
+                android:id="@+id/button1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a Button" />
+
+            <TextView
+                android:id="@+id/text2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a TextView" />
+
+            <Button
+                android:id="@+id/button2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a Button" />
+
+            <TextView
+                android:id="@+id/text3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a TextView" />
+
+            <Button
+                android:id="@+id/button3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a Button" />
+
+            <TextView
+                android:id="@+id/text4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a TextView" />
+
+            <Button
+                android:id="@+id/button4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a Button" />
+
+            <TextView
+                android:id="@+id/text5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a TextView" />
+
+            <Button
+                android:id="@+id/button5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a Button" />
+
+            <TextView
+                android:id="@+id/text6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a TextView" />
+
+            <Button
+                android:id="@+id/button6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a Button" />
+
+            <TextView
+                android:id="@+id/text7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a TextView" />
+
+            <Button
+                android:id="@+id/button7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a Button" />
+
+            <TextView
+                android:id="@+id/text8"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a TextView" />
+
+            <Button
+                android:id="@+id/button8"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a Button" />
+
+            <TextView
+                android:id="@+id/text9"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a TextView" />
+
+            <Button
+                android:id="@+id/button9"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a Button" />
+
+            <TextView
+                android:id="@+id/text10"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a TextView" />
+
+            <Button
+                android:id="@+id/button10"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a Button" />
+
+            <TextView
+                android:id="@+id/text11"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a TextView" />
+
+            <Button
+                android:id="@+id/button11"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a Button" />
+
+            <TextView
+                android:id="@+id/text12"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a TextView" />
+
+            <Button
+                android:id="@+id/button12"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hello, I am a Button" />
+        </LinearLayout>
+    </ScrollView>
+
+    <com.github.clans.fab.FloatingActionMenu
+        android:id="@+id/material_design_android_floating_action_menu"
+        android:layout_width="234dp"
+        android:layout_height="202dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/scrollView2"
+        app:layout_constraintTop_toBottomOf="@+id/scrollView2"
+        app:layout_constraintVertical_bias="1.0"
+        app:menu_animationDelayPerItem="55"
+        app:menu_backgroundColor="@android:color/transparent"
+        app:menu_buttonSpacing="0dp"
+        app:menu_colorNormal="#da3c2f"
+        app:menu_colorPressed="#dc4b3f"
+        app:menu_colorRipple="#99d4d4d4"
+        app:menu_fab_size="normal"
+        app:menu_icon="@drawable/fab_add"
+        app:menu_labels_colorNormal="#333"
+        app:menu_labels_colorPressed="#444"
+        app:menu_labels_colorRipple="#66efecec"
+        app:menu_labels_cornerRadius="3dp"
+        app:menu_labels_ellipsize="none"
+        app:menu_labels_hideAnimation="@anim/fab_slide_out_to_right"
+        app:menu_labels_margin="0dp"
+        app:menu_labels_maxLines="-1"
+        app:menu_labels_padding="8dp"
+        app:menu_labels_position="left"
+        app:menu_labels_showAnimation="@anim/fab_slide_in_from_right"
+        app:menu_labels_showShadow="true"
+        app:menu_labels_singleLine="false"
+        app:menu_labels_textColor="#f2f1f1"
+        app:menu_labels_textSize="15sp"
+        app:menu_openDirection="up"
+        app:menu_shadowColor="#66aff198"
+        app:menu_shadowRadius="4dp"
+        app:menu_shadowXOffset="1dp"
+        app:menu_shadowYOffset="4dp"
+        app:menu_showShadow="true">
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fab_menu_capture"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Hello, I am a TextView" />
-        <Button android:id="@+id/button1"
+            android:src="@drawable/ic_camera"
+            app:fab_label="Capture"
+            app:fab_size="mini" />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fab_menu_photo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Hello, I am a Button" />
-        <TextView android:id="@+id/text2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a TextView" />
-        <Button android:id="@+id/button2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a Button" />
-        <TextView android:id="@+id/text3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a TextView" />
-        <Button android:id="@+id/button3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a Button" />
-        <TextView android:id="@+id/text4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a TextView" />
-        <Button android:id="@+id/button4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a Button" />
-        <TextView android:id="@+id/text5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a TextView" />
-        <Button android:id="@+id/button5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a Button" />
-        <TextView android:id="@+id/text6"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a TextView" />
-        <Button android:id="@+id/button6"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a Button" />
-        <TextView android:id="@+id/text7"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a TextView" />
-        <Button android:id="@+id/button7"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a Button" />
-        <TextView android:id="@+id/text8"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a TextView" />
-        <Button android:id="@+id/button8"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a Button" />
-        <TextView android:id="@+id/text9"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a TextView" />
-        <Button android:id="@+id/button9"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a Button" />
-        <TextView android:id="@+id/text10"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a TextView" />
-        <Button android:id="@+id/button10"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a Button" />
-        <TextView android:id="@+id/text11"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a TextView" />
-        <Button android:id="@+id/button11"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a Button" />
-        <TextView android:id="@+id/text12"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a TextView" />
-        <Button android:id="@+id/button12"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello, I am a Button" />
-    </LinearLayout>
+            android:src="@drawable/ic_photo"
+            app:fab_label="Browse Image"
+            app:fab_size="mini" />
+
+    </com.github.clans.fab.FloatingActionMenu>
 </android.support.constraint.ConstraintLayout>
+
+

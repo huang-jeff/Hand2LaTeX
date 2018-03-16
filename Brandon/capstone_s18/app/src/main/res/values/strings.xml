@@ -1,6 +1,9 @@
 <resources>
-    <string name="app_name">My Documents</string>
+    <string name="app_name">Image to Latex</string>
     <string name="my_docs">My Documents</string>
     <string name="settings">Settings</string>
     <string name="about">About</string>
+    <string name="capture_menu">Here is your selected image</string>
+    <string name="about_menu">You are on the about page.</string>
+    <string name="settings_menu">You are on the settings page</string>
 </resources>
