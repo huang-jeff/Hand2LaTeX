@@ -15,6 +15,9 @@ outputPath = '../images/outputs/'
 imageName = input("Enter image name: ")
 imagePath = inputPath + str(imageName)
 outputPath = outputPath + support.findName(imageName)
+
+textExtractPath = outputPath
+
 if not os.path.exists(outputPath):
     os.makedirs(outputPath)
 
@@ -44,7 +47,7 @@ if os.path.exists(imagePath):
             print('page found in image')
             approx = support.cornerPoints(target)
             pts2 = np.float32([[0,0],[800,0],[800,800],[0,800]])
-            
+
             M = cv2.getPerspectiveTransform(approx,pts2)
             dest = cv2.warpPerspective(original,M,(800,800))
             
@@ -55,7 +58,6 @@ if os.path.exists(imagePath):
             warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
             T = threshold_local(warped, 11, offset = 10, method = "gaussian")
             warped = (warped > T).astype("uint8") * 255
-            
             
             ret, threshold1 = cv2.threshold(dest, 127, 255, cv2.THRESH_BINARY)
             threshold2 = cv2.adaptiveThreshold(dest, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
@@ -83,7 +85,8 @@ if os.path.exists(imagePath):
             print('outputting otus\'s ... done')
             cv2.imwrite(outputPath + 'otsu_' + imageName, threshold4)
             print('outputting dest ... done')
-            cv2.imwrite(outputPath + 'dest_' + imageName, dest)           
+            textExtractPath + 'dest_' + imageName
+            cv2.imwrite(textExtractPath, dest)           
     except NameError:
         print('page not found in image')
     print('page extraction ... done')
@@ -91,6 +94,33 @@ else:
     print('file not found')
     
 #================================================================================================================
-from PIL import Image
-from pytesseract import image_to_string
+
+import json
+import random
+import math
+from PIL import Image, ImageDraw
+from collections import defaultdict
+from scipy.ndimage.filters import rank_filter
+
+tImage = Image.open(textExtractPath)
+scale, image = support.downscale_image(tImage)
+edges = cv2.Canny(np.asarray(image), 100, 200)
+_, contours, heirarchy = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+borders = support.findBorder(contours, edges)
+borders.sort(key=lambda i_x1_y1_x2_y2: (i_x1_y1_x2_y2[3] - i_x1_y1_x2_y2[1]) * (i_x1_y1_x2_y2[4] - i_x1_y1_x2_y2[2]))
+bordersContour = None
+if len(borders):
+    borderContour = contours[borders[0][0]]
+    edges = support.removeBorder(borderContour, edges)
+edges = 255 * (edges > 0).astyle(np.uint8)
+
+maxed_rows = rank_filter(edges, -4, size=(1, 20))
+maxed_cols = rank_filter(edges, -4, size=(20, 1))
+debordered = np.minimum(np.minimum(edges, maxed_rows), maxed_cols)
+edges = debordered
+contours = support.findComponents(edges)
+if len(contours) == 0:
+    print('no text detected')
+    return
+crop = support.findOptimalComponents(contours, edges)
 
