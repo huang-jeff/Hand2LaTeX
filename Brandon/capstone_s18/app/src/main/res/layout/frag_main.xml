@@ -16,10 +16,10 @@
         android:id="@+id/material_design_android_floating_action_menu"
         android:layout_width="234dp"
         android:layout_height="202dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintVertical_bias="1.0"
         app:menu_animationDelayPerItem="55"
         app:menu_backgroundColor="@android:color/transparent"
         app:menu_buttonSpacing="0dp"
@@ -44,10 +44,6 @@
         app:menu_labels_textColor="#f2f1f1"
         app:menu_labels_textSize="15sp"
         app:menu_openDirection="up"
-        app:menu_shadowColor="#66aff198"
-        app:menu_shadowRadius="4dp"
-        app:menu_shadowXOffset="1dp"
-        app:menu_shadowYOffset="4dp"
         app:menu_showShadow="true">
 
         <com.github.clans.fab.FloatingActionButton

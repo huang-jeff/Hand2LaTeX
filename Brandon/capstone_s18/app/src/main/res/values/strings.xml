@@ -11,4 +11,17 @@
     <string name="processing">Processing Status: </string>
     <string name="console_title">Console</string>
     <string name="thumbnail">Thumbnail</string>
+    <string name="basic_preferences">Basic Settings</string>
+    <string name="save_checkbox_preference">Save to Gallery</string>
+    <string name="save_summary_checkbox_preference">Upon capturing a picture, save the picture to the gallery.</string>
+    <string name="server_based_preferences">Server Settngs</string>
+    <string name="server_edittext_preference">Server IP</string>
+    <string name="server_summary_edittext_preference">The server to be used when connecting to process images.</string>
+    <string name="server_title_edittext_preference">Server IP</string>
+    <string name="port_edittext_preference">Server Port</string>
+    <string name="port_summary_edittext_preference">The port to be used when connecting to the above server.</string>
+    <string name="port_title_edittext_preference">Port</string>
+    <string name="hold_title">Document Options</string>
+    <string name="primary_title">Preview Options</string>
+    <string name="process">Process</string>
 </resources>

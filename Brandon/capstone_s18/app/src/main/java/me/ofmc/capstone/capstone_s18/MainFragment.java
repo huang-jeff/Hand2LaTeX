@@ -13,12 +13,15 @@ import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -64,6 +67,7 @@ public class MainFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("My Documents");
         View view = inflater.inflate(R.layout.frag_main, container, false);
         fab = view.findViewById(R.id.fab_menu_capture);
         fab2 = view.findViewById(R.id.fab_menu_photo);
@@ -116,6 +120,23 @@ public class MainFragment extends Fragment {
                 adapter.add(newDoc);
             }
             mListView.setAdapter(adapter);
+            mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+                                               int pos, long id) {
+                    HoldDialogFragment holdDiag = new HoldDialogFragment();
+                    holdDiag.show(getActivity().getFragmentManager(), "hold");
+                    return true;
+                }
+            });
+            mListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+            {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    PrimaryDialogFragment primDialog = new PrimaryDialogFragment();
+                    primDialog.show(getActivity().getFragmentManager(), "primary");
+                }
+            });
         } else{
             System.out.println("DOCLIST IS NULL???");
         }

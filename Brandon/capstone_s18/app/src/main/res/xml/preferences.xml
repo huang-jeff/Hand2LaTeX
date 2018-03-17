@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <PreferenceCategory
+        android:title="@string/basic_preferences">
+
+        <CheckBoxPreference
+            android:key="checkbox_preference"
+            android:title="@string/save_checkbox_preference"
+            android:summary="@string/save_summary_checkbox_preference" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/server_based_preferences">
+
+        <EditTextPreference
+            android:key="server_preference"
+            android:title="@string/server_edittext_preference"
+            android:summary="@string/server_summary_edittext_preference"
+            android:dialogTitle="@string/server_title_edittext_preference" />
+
+        <EditTextPreference
+            android:key="port_preference"
+            android:title="@string/port_edittext_preference"
+            android:summary="@string/port_summary_edittext_preference"
+            android:dialogTitle="@string/port_title_edittext_preference" />
+
+    </PreferenceCategory>
+
+
+</PreferenceScreen>

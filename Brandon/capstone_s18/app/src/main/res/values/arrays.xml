@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="hold_options_array">
+        <item>Add page</item>
+        <item>Delete Document</item>
+        <item>Remove Page</item>
+        <item>Rename</item>
+    </string-array>
+    <string-array name="primary_options_array">
+        <item>Open PDF</item>
+        <item>Edit Latex Document</item>
+        <item>Recompile Latex</item>
+        <item>Share</item>
+    </string-array>
+</resources>

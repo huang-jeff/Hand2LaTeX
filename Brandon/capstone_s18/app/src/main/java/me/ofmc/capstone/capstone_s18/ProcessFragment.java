@@ -11,6 +11,7 @@ import android.provider.OpenableColumns;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
 import android.util.JsonWriter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -61,7 +62,7 @@ public class ProcessFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Processing");
         view = inflater.inflate(R.layout.frag_process, container, false);
         progressBar = view.findViewById(R.id.progressBar);
         String folderName = getFileName(photoFile).split(Pattern.quote(new String(".")))[0] + "-" + System.currentTimeMillis();
