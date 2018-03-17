@@ -99,7 +99,6 @@ def dilate(arr, N, iterations):
 
 def findComponents(edges, maxComps=16):
     count = 21
-    dilation = 5
     n = 1
     while count > 16:
         n += 1
@@ -119,8 +118,8 @@ def contourAssist(contours, arr):
         cInfo.append({
             'x1': x,
             'y1': y,
-            'x2': x + w -1,
-            'y2': y + h -1,
+            'x2': x + w - 1,
+            'y2': y + h - 1,
             'sum': np.sum(arr * (cImage > 0))/255
         })
     return cInfo
