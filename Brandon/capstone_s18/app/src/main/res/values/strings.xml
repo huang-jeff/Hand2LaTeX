@@ -6,4 +6,9 @@
     <string name="capture_menu">Here is your selected image</string>
     <string name="about_menu">You are on the about page.</string>
     <string name="settings_menu">You are on the settings page</string>
+    <string name="pic_desc">Preview for photo taken</string>
+    <string name="pic_name">Enter document name</string>
+    <string name="processing">Processing Status: </string>
+    <string name="console_title">Console</string>
+    <string name="thumbnail">Thumbnail</string>
 </resources>
