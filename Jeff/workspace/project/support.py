@@ -63,14 +63,14 @@ def downscale_image(image, max_dim=2048):
     scale = 1.0 * max_dim / max(a, b)
     newImage = image.resize((int(a * scale), int(b * scale)), Image.ANTIALIAS)
     return scale, newImage
-    
+
 def findBorder(contours, arr):
     borders = []
-    area = arr.shape[1]
+    area = arr.shape[0] * arr.shape[1]
     for i, c in enumerate(contours):
         x, y, w, h = cv2.boundingRect(c)
         if w * h > 0.5 * area:
-            borders.append((i, x, y, x + 2 - 1, y + h - 1))
+            borders.append((i, x, y, x + w - 1, y + h - 1))
     return borders
 
 def removeBorder(contour, arr):
@@ -105,8 +105,9 @@ def findComponents(edges, maxComps=16):
         n += 1
         dilateImage = dilate(edges, N = 3, iterations = n)
         dilateImage = np.uint8(dilateImage)
-        _, contours, heirarchy = cv2.findContours(dilateImage, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        _, contours, _ = cv2.findContours(dilateImage, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         count = len(contours)
+    print(count)
     return contours
 
 def contourAssist(contours, arr):
@@ -124,3 +125,82 @@ def contourAssist(contours, arr):
         })
     return cInfo
 
+def cropArea(crop):
+    x1, y1, x2, y2, = crop
+    return max(0, x2 - x1) * max(0, y2 - y1)
+
+def cropByUnion(crop1, crop2):
+    x11, y11, x21, y21 = crop1
+    x12, y12, x22, y22 = crop2
+    return min(x11, x12), min(y11, y12), max(x21, x22), max(y21, y22)
+
+def cropByIntersect(crop1, crop2):
+    x11, y11, x21, y21 = crop1
+    x12, y12, x22, y22 = crop2
+    return max(x11, x12), max(y11, y12), min(x21, x22), min(y21, y22)
+
+def findOptimalComponents(contours, edges):
+    cInfo = contourAssist(contours, edges)
+    cInfo.sort(key=lambda x: -x['sum'])
+    total = np.sum(edges) / 255
+    area = edges.shape[0] * edges.shape[1]
+    c = cInfo[0]
+    del cInfo[0]
+    thisCrop = c['x1'], c['y1'], c['x2'], c['y2']
+    crop = thisCrop
+    coveredSum = c['sum']
+    
+    while coveredSum < total:
+        changed = False
+        recall = 1.0 * coveredSum / total
+        prec = 1 - 1.0 * cropArea(crop) / area
+        f1 = 2 * (prec * recall / (prec + recall))
+        for i, c in enumerate(cInfo):
+            currCrop = c['x1'], c['y1'], c['x2'], c['y2']
+            newCrop = cropByUnion(crop, currCrop)
+            newSum = coveredSum + c['sum']
+            newRecall = 1.0 * newSum / total
+            newPrec = 1 - 1.0 * cropArea(newCrop) / area
+            newF1 = 2 * newPrec * newRecall / (newPrec + newRecall)
+            
+            remainFraction = c['sum'] / (total - coveredSum)
+            newAreaFraction = 1.0 * cropArea(newCrop) / cropArea(crop) - 1
+            if newF1 > f1 or (remainFraction > 0.025 and newAreaFraction < 0.15):
+                crop = newCrop
+                coveredSum = newSum
+                del cInfo[i]
+                changed = True
+                break
+        if not changed:
+            break
+    return crop
+
+def padCrop(crop, contours, edges, borderContour, padPx=15):
+    bx1, by1, bx2, by2 = 0, 0, edges.shape[0], edges.shape[1]
+    if borderContour is not None and len(borderContour) > 0:
+        c = contourAssist([borderContour], edges)[0]
+        bx1, by1, bx2, by2 = c['x1'] + 5, c['y1'] + 5, c['x2'] - 5, c['y2'] -5
+        
+    def cropByBorder(crop):
+        x1, y1, x2, y2 = crop
+        x1 = max(x1 - padPx, bx1)
+        y1 = max(y1 - padPx, by1)
+        x2 = max(x2 + padPx, bx2)
+        y2 = max(y2 + padPx, by2)
+        return crop
+    
+    crop = cropByBorder(crop)
+    cInfo = contourAssist(contours, edges)
+    changed = False
+    for c in cInfo:
+        currCrop = c['x1'], c['y1'], c['x2'], c['y2']
+        currArea = cropArea(currCrop)
+        intArea = cropArea(cropByIntersect(crop, currCrop))
+        newCrop = cropByBorder(cropByUnion(crop, currCrop))
+        if 0 < intArea < currArea and crop != newCrop:
+            changed = True
+            crop = newCrop
+    if changed:
+        return padCrop(crop, contours, edges, borderContour, padPx)
+    else:
+        return crop
