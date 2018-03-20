@@ -1,5 +1,6 @@
 To compile autotrace
 install pstoedit-dev
+FOR MAC: brew install glib
 autoreconf --force --install || exit 1
 intltoolize --force || exit 1
 
