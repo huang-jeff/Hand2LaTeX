@@ -14,9 +14,12 @@ def hello():
 # shows a list of all todos, and lets you POST to add new tasks
 class Upload(Resource):
     def post(self):
-        image = request.files['userImage']
-        latex = coords.main(image)
-        ret = {'image': latex}
+        print(request.headers)
+        json_data = request.get_json()
+        image = json_data['photo']
+        image = base64.b64decode(image)
+        latex, pdf = coords.main(image)
+        ret = {'latex': latex, 'pdf': base64.standard_b64encode(pdf).decode()}
         return ret
 
 ##

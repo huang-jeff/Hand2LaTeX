@@ -1,32 +1,52 @@
 package me.ofmc.capstone.capstone_s18;
 
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.JsonWriter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.commons.io.IOUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -46,6 +66,7 @@ public class ProcessFragment extends Fragment {
     private String docName;
     private Bitmap thumbImage;
     private Timer timer;
+    private String folderName;
 
     public static ProcessFragment newInstance(Uri photoFile, String docName, Bitmap thumbImage ) {
         ProcessFragment fragment = new ProcessFragment();
@@ -59,60 +80,176 @@ public class ProcessFragment extends Fragment {
         this.thumbImage = thumbImage;
     }
 
+    private void saveFiles(String tex, byte[] pdf){
+        File pdfFile = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), File.separator + folderName + File.separator + "tex.pdf");
+        File texFile = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), File.separator + folderName + File.separator + "result.tex");
+        try {
+            OutputStream fo1 = new FileOutputStream(pdfFile);
+            OutputStream fo2 = new FileOutputStream(texFile);
+            fo1.write(pdf);
+            fo2.write(tex.getBytes());
+        } catch (IOException e) {
+            writeConsole(e.toString());
+        }
+    }
+
+    public void sendPost() {
+        Thread.UncaughtExceptionHandler h = new Thread.UncaughtExceptionHandler() {
+            public void uncaughtException(Thread th, Throwable ex) {
+                ex.printStackTrace();
+                Toast.makeText(getContext(), ex.toString(), Toast.LENGTH_LONG).show();
+            }
+        };
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+                    String ip = sharedPref.getString("server_preference", null);
+                    String port = sharedPref.getString("port_preference", null);
+
+                    URL url = new URL("http://" + ip + ":" + port + "/upload");
+                    writeConsole("URL set as: " + url.toString());
+                HttpURLConnection conn= (HttpURLConnection) url.openConnection();
+                conn.setDoOutput( true );
+                conn.setDoInput(true);
+                conn.setInstanceFollowRedirects( false );
+                conn.setRequestMethod( "POST" );
+                conn.setRequestProperty( "Content-Type", "application/json");
+                conn.setRequestProperty( "charset", "utf-8");
+                // Add your data
+                JSONObject jsonParam = new JSONObject();
+                    writeConsole("Done creating json");
+                final InputStream imageStream = getActivity().getContentResolver().openInputStream(photoFile);
+                byte[] bytes = IOUtils.toByteArray(imageStream);
+                String image64 = Base64.encodeToString(bytes, Base64.DEFAULT);
+                jsonParam.put("photo", image64);
+                String jsonString = jsonParam.toString();
+                DataOutputStream os = new DataOutputStream(conn.getOutputStream());
+                //os.writeBytes(URLEncoder.encode(jsonParam.toString(), "UTF-8"));
+                os.writeBytes(jsonParam.toString());
+                writeConsole("Wrote data stream");
+                os.flush();
+                os.close();
+
+                Log.i("STATUS", String.valueOf(conn.getResponseCode()));
+                String response = conn.getResponseMessage();
+                Log.i("MSG" , response);
+                BufferedReader br;
+                writeConsole("HTTP CODE: " + conn.getResponseCode());
+                    if (200 <= conn.getResponseCode() && conn.getResponseCode() <= 299) {
+                        br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    } else {
+                        br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                    }
+                String message = org.apache.commons.io.IOUtils.toString(br);
+                JSONObject json = new JSONObject(message);
+                String latex = json.getString("latex");
+                byte[] tex_pdf = Base64.decode(json.getString("pdf"), Base64.DEFAULT);
+                writeConsole("Saving files");
+                saveFiles(latex, tex_pdf);
+                writeConsole("Done saving");
+                conn.disconnect();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                writeConsole(e.toString());
+                }
+            }
+        });
+        thread.setUncaughtExceptionHandler(h);
+        thread.start();
+    }
+
+    protected void writeConsole(final String textLine){
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+        public void run() {
+            final TextView console =  view.findViewById(R.id.console);
+            final ScrollView textContainer=  view.findViewById(R.id.consoleContainer);
+
+            if(currentText == null){
+                currentText = textLine;
+            } else{
+                currentText += "\n" + textLine;
+            }
+            console.setText(currentText);
+            textContainer.fullScroll(View.FOCUS_DOWN);
+            }
+        });
+    }
+
+    protected void setProcStatus(final String status){
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+            final TextView procStatus = view.findViewById(R.id.procStatus);
+            procStatus.setText(status+"/"+progressBar.getMax());
+        }
+        });
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Processing");
         view = inflater.inflate(R.layout.frag_process, container, false);
         progressBar = view.findViewById(R.id.progressBar);
-        String folderName = getFileName(photoFile).split(Pattern.quote(new String(".")))[0] + "-" + System.currentTimeMillis();
+        folderName = getFileName(photoFile).split(Pattern.quote(new String(".")))[0] + "-" + System.currentTimeMillis();
         File thumbDir = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), File.separator + folderName + File.separator + "thumb.jpg");
         File jsonFile = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), File.separator + folderName + File.separator + "data.json");
         writeJson(folderName, jsonFile, thumbDir);
         writeThumb(folderName, thumbDir);
-        final Handler handler = new Handler();
-        timer = new Timer(false);
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        progressStatus += 10;
-                        if(currentText == null){
-                            currentText = Long.toString( System.currentTimeMillis());
-                        } else{
-                            currentText += "\n" + System.currentTimeMillis();
-                        }
-
-                        final TextView myTextView =  view.findViewById(R.id.console);
-                        final ScrollView textContainer=  view.findViewById(R.id.consoleContainer);
-                        final TextView procStatus = view.findViewById(R.id.procStatus);
-                        myTextView.setText(currentText);
-                        progressStatus += 10;
-                        if(progressStatus > 100){
-                            progressStatus = 0;
-                            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                            Bundle args = new Bundle();
-                            MainFragment newFragment = new MainFragment();
-                            newFragment.setArguments(args);
-                            transaction.replace(R.id.fragment_container, newFragment);
-                            transaction.addToBackStack(null);
-                            transaction.commit();
-                            System.out.println("FRAGMENT CHANGED???");
-                        }
-                        handler.post(new Runnable() {
-                            public void run() {
-                                progressBar.setProgress(progressStatus);
-                                procStatus.setText(progressStatus+"/"+progressBar.getMax());
-                            }
-                        });
-                        textContainer.fullScroll(View.FOCUS_DOWN);
-                    }
-                });
-            }
-        };
-        timer.scheduleAtFixedRate(timerTask, 1000, 1000); // 1000 = 1 second.
+        writeConsole("Initializing...");
+        sendPost();
+//        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+//        Bundle args = new Bundle();
+//        MainFragment newFragment = new MainFragment();
+//        newFragment.setArguments(args);
+//        transaction.replace(R.id.fragment_container, newFragment);
+//        transaction.addToBackStack(null);
+//        transaction.commit();
+//        System.out.println("FRAGMENT CHANGED???");
+//        timer = new Timer(false);
+//        TimerTask timerTask = new TimerTask() {
+//            @Override
+//            public void run() {
+//                handler.post(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        progressStatus += 10;
+//                        if(currentText == null){
+//                            currentText = Long.toString( System.currentTimeMillis());
+//                        } else{
+//                            currentText += "\n" + System.currentTimeMillis();
+//                        }
+//
+//
+//                        myTextView.setText(currentText);
+//                        progressStatus += 10;
+//                        if(progressStatus > 100){
+//                            progressStatus = 0;
+//                            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+//                            Bundle args = new Bundle();
+//                            MainFragment newFragment = new MainFragment();
+//                            newFragment.setArguments(args);
+//                            transaction.replace(R.id.fragment_container, newFragment);
+//                            transaction.addToBackStack(null);
+//                            transaction.commit();
+//                            System.out.println("FRAGMENT CHANGED???");
+//                        }
+//                        handler.post(new Runnable() {
+//                            public void run() {
+//                                progressBar.setProgress(progressStatus);
+//                                procStatus.setText(progressStatus+"/"+progressBar.getMax());
+//                            }
+//                        });
+//                        textContainer.fullScroll(View.FOCUS_DOWN);
+//                    }
+//                });
+//            }
+//        };
+//        timer.scheduleAtFixedRate(timerTask, 1000, 1000); // 1000 = 1 second.
 
 
         return view;
@@ -120,7 +257,6 @@ public class ProcessFragment extends Fragment {
 
     public void onStop() {
         super.onStop();
-        timer.cancel();
     }
 
     private void writeThumb(String folderName, File thumbDir){

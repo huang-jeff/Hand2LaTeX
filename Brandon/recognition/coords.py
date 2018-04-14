@@ -2,6 +2,8 @@ from xml.dom import minidom
 from svg.path import Path, Line, Arc, CubicBezier, QuadraticBezier
 from svg.path import parse_path
 from PIL import Image, ImageFilter, ExifTags
+from pylatex import Document, Section, Subsection, Command
+from pylatex.utils import italic, NoEscape
 import os
 import random
 import shutil
@@ -11,10 +13,11 @@ import sys
 import numpy as np
 import math, cmath
 import re
+from io import BytesIO
 
 
 def cleanFile(filePath, newFilePath):
-    img = Image.open(filePath)
+    img = Image.open(BytesIO(filePath))
     #im = im.point(lambda x:0 if x<143 else 255)
     img = img.filter(ImageFilter.GaussianBlur(radius=2))
     gray = img.convert('L')
@@ -22,6 +25,30 @@ def cleanFile(filePath, newFilePath):
 
     bw.save(newFilePath,"ppm")
 
+def readPDF(folder):
+	myfile = open(folder + os.sep + 'tex_doc.pdf', 'rb')
+	return myfile.read()
+
+
+def make_document(tex, folder):
+    # Document with `\maketitle` command activated
+    doc = Document()
+
+    doc.preamble.append(Command('title', 'Awesome Title'))
+    doc.preamble.append(Command('author', 'Anonymous author'))
+    doc.preamble.append(Command('date', NoEscape(r'\today')))
+    doc.append(NoEscape(r'\maketitle'))
+
+    with doc.create(Section('A section')):
+        doc.append(NoEscape('$' + tex + '$'))
+
+        with doc.create(Subsection('A subsection')):
+            doc.append('Also some crazy characters: $&#{}')
+
+    doc.generate_pdf(folder + 'tex_doc', clean_tex=False)
+    tex_pdf = readPDF(folder)
+    tex = doc.dumps()
+    return tex, tex_pdf
 
 
 def main(file):
@@ -134,6 +161,9 @@ def main(file):
 	stdout, stderr = p.communicate()
 	stdout = stdout.decode('ascii')
 	stdout = stdout.splitlines() 
+	latex = stdout[-1]
+	tex, tex_pdf = make_document(latex, tmp_folder)
 	shutil.rmtree(tmp_folder)
-	return stdout[-1]
+	return tex, tex_pdf
 	# print(stdout[-1])
+
