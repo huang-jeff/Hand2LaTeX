@@ -163,7 +163,7 @@ def main(file):
 	stdout = stdout.splitlines() 
 	latex = stdout[-1]
 	tex, tex_pdf = make_document(latex, tmp_folder)
-	# shutil.rmtree(tmp_folder)
+	shutil.rmtree(tmp_folder)
 	return tex, tex_pdf
 	# print(stdout[-1])
 
