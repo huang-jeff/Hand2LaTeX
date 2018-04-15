@@ -29,6 +29,7 @@ import android.widget.Toast;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -97,15 +98,19 @@ public class MainFragment extends Fragment {
             System.out.println("LEN: " + docList.size());
             String[] listItems = new String[docList.size()];
             ArrayList<Document> arrayOfDocs = new ArrayList<>();
-            DocAdapter adapter = new DocAdapter(this.getContext(), arrayOfDocs);
+            final DocAdapter adapter = new DocAdapter(this.getContext(), arrayOfDocs);
             for(int i = 0; i < docList.size(); i++){
                 String title = null;
                 String date = null;
                 String dir = null;
+                long dateMills = 0;
+                JSONArray files = null;
                 try {
                     title = docList.get(i).getString("name");
                     date = docList.get(i).getString("date");
+                    dateMills = docList.get(i).getLong("date");
                     dir = docList.get(i).getString("dir");
+                    files = docList.get(i).getJSONArray("files");
                     System.out.println("DIR????: " + dir);
                     Calendar cal = Calendar.getInstance();
                     cal.setTimeInMillis(Long.parseLong(date));
@@ -116,7 +121,7 @@ public class MainFragment extends Fragment {
                     e.printStackTrace();
                     Toast.makeText(this.getContext(), "Something went wrong", Toast.LENGTH_LONG).show();
                 }
-                Document newDoc = new Document(title, date, dir);
+                Document newDoc = new Document(title, date, dir, files, dateMills);
                 adapter.add(newDoc);
             }
             mListView.setAdapter(adapter);
@@ -124,7 +129,8 @@ public class MainFragment extends Fragment {
                 @Override
                 public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
                                                int pos, long id) {
-                    HoldDialogFragment holdDiag = new HoldDialogFragment();
+                    Document itemSelected = (Document)arg0.getItemAtPosition(pos);
+                    HoldDialogFragment holdDiag = HoldDialogFragment.newInstance(itemSelected,adapter);
                     holdDiag.show(getActivity().getFragmentManager(), "hold");
                     return true;
                 }
@@ -133,7 +139,8 @@ public class MainFragment extends Fragment {
             {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    PrimaryDialogFragment primDialog = new PrimaryDialogFragment();
+                    Document itemSelected = (Document)parent.getItemAtPosition(position);
+                    PrimaryDialogFragment primDialog = PrimaryDialogFragment.newInstance(itemSelected, adapter);
                     primDialog.show(getActivity().getFragmentManager(), "primary");
                 }
             });

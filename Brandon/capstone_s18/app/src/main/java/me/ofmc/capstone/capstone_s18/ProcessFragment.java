@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
@@ -62,6 +63,10 @@ public class ProcessFragment extends Fragment {
     private View view;
     private ProgressBar progressBar;
     private int progressStatus = 0;
+    private static Object monitor = new Object();
+    private static boolean fileProcessed = false;
+    private static boolean exception = false;
+    private Thread thread;
     private Uri photoFile;
     private String docName;
     private Bitmap thumbImage;
@@ -94,74 +99,142 @@ public class ProcessFragment extends Fragment {
     }
 
     public void sendPost() {
-        Thread.UncaughtExceptionHandler h = new Thread.UncaughtExceptionHandler() {
-            public void uncaughtException(Thread th, Throwable ex) {
-                ex.printStackTrace();
-                Toast.makeText(getContext(), ex.toString(), Toast.LENGTH_LONG).show();
-            }
-        };
-        Thread thread = new Thread(new Runnable() {
+        thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
-                    String ip = sharedPref.getString("server_preference", null);
-                    String port = sharedPref.getString("port_preference", null);
+                while(!fileProcessed) {
+                    synchronized(monitor) {
+                        try {
+                            if(exception){
+                                writeConsole("WAITING");
+                                monitor.wait();
+                                if(exception){
+                                   break;
+                                }
+                            }
+                            showRetryButton(false);
+                            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+                            String ip = sharedPref.getString("server_preference", null);
+                            String port = sharedPref.getString("port_preference", null);
 
-                    URL url = new URL("http://" + ip + ":" + port + "/upload");
-                    writeConsole("URL set as: " + url.toString());
-                HttpURLConnection conn= (HttpURLConnection) url.openConnection();
-                conn.setDoOutput( true );
-                conn.setDoInput(true);
-                conn.setInstanceFollowRedirects( false );
-                conn.setRequestMethod( "POST" );
-                conn.setRequestProperty( "Content-Type", "application/json");
-                conn.setRequestProperty( "charset", "utf-8");
-                // Add your data
-                JSONObject jsonParam = new JSONObject();
-                    writeConsole("Done creating json");
-                final InputStream imageStream = getActivity().getContentResolver().openInputStream(photoFile);
-                byte[] bytes = IOUtils.toByteArray(imageStream);
-                String image64 = Base64.encodeToString(bytes, Base64.DEFAULT);
-                jsonParam.put("photo", image64);
-                String jsonString = jsonParam.toString();
-                DataOutputStream os = new DataOutputStream(conn.getOutputStream());
-                //os.writeBytes(URLEncoder.encode(jsonParam.toString(), "UTF-8"));
-                os.writeBytes(jsonParam.toString());
-                writeConsole("Wrote data stream");
-                os.flush();
-                os.close();
+                            URL url = new URL("http://" + ip + ":" + port + "/upload");
+                            progressBar.setProgress(10);
+                            setProcStatus(10 + "/" + progressBar.getMax());
+                            writeConsole("URL set as: " + url.toString());
+                            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                            conn.setDoOutput(true);
+                            conn.setDoInput(true);
+                            conn.setInstanceFollowRedirects(false);
+                            conn.setRequestMethod("POST");
+                            conn.setRequestProperty("Content-Type", "application/json");
+                            conn.setRequestProperty("charset", "utf-8");
+                            // Add your data
+                            JSONObject jsonParam = new JSONObject();
+                            progressBar.setProgress(20);
+                            setProcStatus(20 + "/" + progressBar.getMax());
+                            writeConsole("Loading image");
+                            final InputStream imageStream = getActivity().getContentResolver().openInputStream(photoFile);
+                            byte[] bytes = IOUtils.toByteArray(imageStream);
+                            String image64 = Base64.encodeToString(bytes, Base64.DEFAULT);
+                            jsonParam.put("photo", image64);
+                            progressBar.setProgress(40);
+                            setProcStatus(40 + "/" + progressBar.getMax());
+                            writeConsole("Done loading image");
+                            String jsonString = jsonParam.toString();
+                            progressBar.setProgress(50);
+                            setProcStatus(50 + "/" + progressBar.getMax());
+                            writeConsole("Done creating json");
+                            writeConsole("Uploading Data");
+                            DataOutputStream os = new DataOutputStream(conn.getOutputStream());
+                            //os.writeBytes(URLEncoder.encode(jsonParam.toString(), "UTF-8"));
+                            os.writeBytes(jsonParam.toString());
+                            progressBar.setProgress(70);
+                            setProcStatus(70 + "/" + progressBar.getMax());
+                            writeConsole("Wrote data stream");
+                            os.flush();
+                            os.close();
 
-                Log.i("STATUS", String.valueOf(conn.getResponseCode()));
-                String response = conn.getResponseMessage();
-                Log.i("MSG" , response);
-                BufferedReader br;
-                writeConsole("HTTP CODE: " + conn.getResponseCode());
-                    if (200 <= conn.getResponseCode() && conn.getResponseCode() <= 299) {
-                        br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    } else {
-                        br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                            Log.i("STATUS", String.valueOf(conn.getResponseCode()));
+                            String response = conn.getResponseMessage();
+                            Log.i("MSG", response);
+                            BufferedReader br;
+                            writeConsole("HTTP CODE: " + conn.getResponseCode());
+                            if (200 <= conn.getResponseCode() && conn.getResponseCode() <= 299) {
+                                br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                            } else {
+                                br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                            }
+                            String message = org.apache.commons.io.IOUtils.toString(br);
+                            JSONObject json = new JSONObject(message);
+                            String latex = json.getString("latex");
+                            byte[] tex_pdf = Base64.decode(json.getString("pdf"), Base64.DEFAULT);
+                            progressBar.setProgress(90);
+                            setProcStatus(90 + "/" + progressBar.getMax());
+                            writeConsole("Saving files");
+                            saveFiles(latex, tex_pdf);
+                            progressBar.setProgress(100);
+                            setProcStatus(100 + "/" + progressBar.getMax());
+                            writeConsole("Done saving");
+
+                            conn.disconnect();
+                            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                            Bundle args = new Bundle();
+                            MainFragment newFragment = new MainFragment();
+                            newFragment.setArguments(args);
+                            transaction.replace(R.id.fragment_container, newFragment);
+                            transaction.addToBackStack(null);
+                            transaction.commit();
+                            System.out.println("FRAGMENT CHANGED???");
+                            fileProcessed = true;
+                        }  catch (InterruptedException e) {
+                            System.out.println("INTERRUPT");
+                            exception = false;
+                            return;
+                        } catch (Exception e) {
+                            exception = true;
+                            e.printStackTrace();
+                            writeConsole(e.toString());
+                            showRetryButton(true);
+                        }
                     }
-                String message = org.apache.commons.io.IOUtils.toString(br);
-                JSONObject json = new JSONObject(message);
-                String latex = json.getString("latex");
-                byte[] tex_pdf = Base64.decode(json.getString("pdf"), Base64.DEFAULT);
-                writeConsole("Saving files");
-                saveFiles(latex, tex_pdf);
-                writeConsole("Done saving");
-                conn.disconnect();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                writeConsole(e.toString());
                 }
             }
         });
-        thread.setUncaughtExceptionHandler(h);
+
+            Button retryButton = view.findViewById(R.id.retry);
+            retryButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    writeConsole("trying to wake");
+                    exception = false;
+                    synchronized (monitor) {
+                    monitor.notifyAll();
+                    }
+                }
+            });
+
         thread.start();
     }
 
+    protected  void showRetryButton(final boolean show){
+        if(getActivity() == null)
+            return;
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                final Button retryButton = view.findViewById(R.id.retry);
+                if(show){
+                    retryButton.setVisibility(View.VISIBLE);
+                } else{
+                    retryButton.setVisibility(View.GONE);
+                }
+            }
+        });
+    }
+
     protected void writeConsole(final String textLine){
+        if(getActivity() == null)
+            return;
         getActivity().runOnUiThread(new Runnable() {
             @Override
         public void run() {
@@ -180,11 +253,13 @@ public class ProcessFragment extends Fragment {
     }
 
     protected void setProcStatus(final String status){
+        if(getActivity() == null)
+            return;
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
             final TextView procStatus = view.findViewById(R.id.procStatus);
-            procStatus.setText(status+"/"+progressBar.getMax());
+            procStatus.setText(status);
         }
         });
     }
@@ -196,11 +271,13 @@ public class ProcessFragment extends Fragment {
         view = inflater.inflate(R.layout.frag_process, container, false);
         progressBar = view.findViewById(R.id.progressBar);
         folderName = getFileName(photoFile).split(Pattern.quote(new String(".")))[0] + "-" + System.currentTimeMillis();
+
         File thumbDir = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), File.separator + folderName + File.separator + "thumb.jpg");
         File jsonFile = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), File.separator + folderName + File.separator + "data.json");
         writeJson(folderName, jsonFile, thumbDir);
         writeThumb(folderName, thumbDir);
         writeConsole("Initializing...");
+
         sendPost();
 //        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
 //        Bundle args = new Bundle();
@@ -256,6 +333,11 @@ public class ProcessFragment extends Fragment {
     }
 
     public void onStop() {
+        if(!fileProcessed){
+            thread.interrupt();
+            File folder = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), File.separator + folderName);
+            HoldDialogFragment.deleteRecursive(folder);
+        }
         super.onStop();
     }
 
