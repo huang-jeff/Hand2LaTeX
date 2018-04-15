@@ -102,7 +102,7 @@ public class ProcessFragment extends Fragment {
         thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                while(!fileProcessed) {
+                while(true) {
                     synchronized(monitor) {
                         try {
                             if(exception){
@@ -112,6 +112,7 @@ public class ProcessFragment extends Fragment {
                                    break;
                                 }
                             }
+                            fileProcessed = false;
                             showRetryButton(false);
                             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
                             String ip = sharedPref.getString("server_preference", null);
@@ -186,6 +187,7 @@ public class ProcessFragment extends Fragment {
                             transaction.commit();
                             System.out.println("FRAGMENT CHANGED???");
                             fileProcessed = true;
+                            break;
                         }  catch (InterruptedException e) {
                             System.out.println("INTERRUPT");
                             exception = false;

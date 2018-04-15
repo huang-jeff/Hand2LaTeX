@@ -1,0 +1,32 @@
+digraph mathExp{
+TermSup0 -> TermSup1 [label=H]
+TermSup1 -> LetterMin2 [label=P]
+Ta2 [shape=box,label="a"]
+LetterMin2 -> Ta2
+TermSup1 -> Digit3 [label=P]
+T23 [shape=box,label="2"]
+Digit3 -> T23
+TermSup0 -> Term4 [label=H]
+Term4 -> LetterMin5 [label=H]
+Tsinfty5 [shape=box,label="\infty"]
+LetterMin5 -> Tsinfty5
+Term4 -> Term6 [label=H]
+Term6 -> TermSup7 [label=H]
+TermSup7 -> LetterMin8 [label=P]
+Tb8 [shape=box,label="b"]
+LetterMin8 -> Tb8
+TermSup7 -> Digit9 [label=P]
+T29 [shape=box,label="2"]
+Digit9 -> T29
+Term6 -> OpTerm10 [label=H]
+OpTerm10 -> OpBin11 [label=H]
+Te11 [shape=box,label="="]
+OpBin11 -> Te11
+OpTerm10 -> TermSup12 [label=H]
+TermSup12 -> LetterMin13 [label=P]
+Tc13 [shape=box,label="c"]
+LetterMin13 -> Tc13
+TermSup12 -> Digit14 [label=P]
+T214 [shape=box,label="2"]
+Digit14 -> T214
+}
