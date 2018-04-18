@@ -203,3 +203,85 @@ def padCrop(crop, contours, edges, borderContour, padPx=15):
         return padCrop(crop, contours, edges, borderContour, padPx)
     else:
         return crop
+    
+def textDetection(imagePath):
+
+    image = cv2.imread(imagePath)
+    grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    ret, mask = cv2.threshold(grayscale, 180, 255, cv2.THRESH_BINARY)
+    imageFinal = cv2.bitwise_and(grayscale, grayscale, mask = mask)
+    ret, newImage = cv2.threshold(imageFinal, 180, 255, cv2.THRESH_BINARY)
+    kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
+    dilated = cv2.dilate(newImage, kernel, iterations = 9)
+    
+    _, contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    
+    for c in contours:
+        [x, y, w, h] = cv2.boundingRect(c)
+        if w < 35 and h < 35:
+            continue
+        cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 255), 2)
+        
+        cv2.imshow('detection result', image)
+        cv2.waitKey()
+        
+    return image;
+
+def textDetection2(imagePath):
+    maxArea = 150
+    minArea = 10
+    image = cv2.imread(imagePath)
+    grayscale = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
+    ret, threshold1 = cv2.threshold(grayscale, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+    components = cv2.connectedComponentsWithStats(threshold1)
+    labels = components[1]
+    labelStats = components[2]
+    labelAreas = labelStats[:,4]
+    
+    for comps in range(1, components[0], 1):
+        if labelAreas[comps] > maxArea or labelAreas[comps] < minArea:
+            labels[labels == comps] = 0
+    labels[labels > 0] = 1
+    
+    se = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (25, 25))
+    dilated = cv2.morphologyEx(labels.astype(np.uint8), cv2.MORPH_DILATE, se)
+    
+    comp = cv2.connectedComponentsWithStats(dilated)
+    
+    labels = comp[1]
+    labelStats = comp[2]
+    
+    for compLabel in range(1, comp[0], 1):
+        cv2.rectangle(image,(labelStats[compLabel,0],labelStats[compLabel,1]),(labelStats[compLabel,0]+labelStats[compLabel,2],labelStats[compLabel,1]+labelStats[compLabel,3]),(0,0,255),2)
+    cv2.imshow('detection result', image)
+    cv2.waitKey()
+    return image;
+    
+def textDetection3(imagePath, outputPath):
+    image = cv2.imread(imagePath)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    cv2.imshow('gray',gray)
+    cv2.waitKey(0)
+    ret,thresh = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY_INV)
+    cv2.imshow('second', thresh)
+    cv2.waitKey(0)
+    kernel = np.ones((5,100), np.uint8)
+    img_dilation = cv2.dilate(thresh, kernel, iterations=1)
+    cv2.imshow('dilated', img_dilation)
+    cv2.waitKey(0)
+    im2, ctrs, _ = cv2.findContours(img_dilation.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    sorted_ctrs = sorted(ctrs, key=lambda ctr: cv2.boundingRect(ctr)[0])
+    
+    for i, ctr in enumerate(sorted_ctrs):
+        x, y, w, h = cv2.boundingRect(ctr)
+        roi = image[y:y+h, x:x+w]
+        cv2.imshow('segment no:'+str(i), roi)
+        cv2.imwrite(outputPath+'extracted_text_'+str(i)+'.jpg', roi)
+        cv2.rectangle(image, (x,y), (x + w, y + h), (90, 0, 255), 2)
+        cv2.waitKey(0)
+        
+    cv2.imshow('marked areas', image)
+    cv2.waitKey(0)
+    
+    return image;
+    

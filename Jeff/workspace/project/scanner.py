@@ -21,6 +21,8 @@ outputPath = outputPath + support.findName(imageName)
 pageExtracted = False
 textExtractPath = None
 
+scaling = 500
+
 print('importing >> ' + imagePath)
 print('output path >> ' + outputPath)
 if os.path.exists(imagePath):
@@ -28,17 +30,18 @@ if os.path.exists(imagePath):
     if not os.path.exists(outputPath):
         os.makedirs(outputPath)
     image = cv2.imread(imagePath)
-    height, width, _ = image.shape
-    ratio = image.shape[0] / 500
-    image = imutils.resize(image, height=500)
-    print('starting page extraction ...')
     original = image.copy()
+    origHeight, origWidth, _ = image.shape
+    ratio = image.shape[0] / scaling
+    image = imutils.resize(image, height=scaling)
+    print('starting page extraction ...')
     grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(grayscale, (5, 5), 0)
-    edged = cv2.Canny(blurred, 75, 200)
+    edged = cv2.Canny(blurred, 100, 200)
     backupEdged = edged.copy()
     (_, contours, _) = cv2.findContours(edged, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     contours = sorted(contours, key=cv2.contourArea, reverse=True)
+#    print(contours)
     for c in contours:
         p = cv2.arcLength(c, True)
         approx = cv2.approxPolyDP(c, 0.02 * p, True)
@@ -49,7 +52,10 @@ if os.path.exists(imagePath):
         if target is not None:
             print('page found in image')
             pageExtracted = True
-            approx = support.cornerPoints(target)
+            newTarget = target * ratio
+            print(newTarget)
+            #approx = support.cornerPoints(target)
+            approx = support.cornerPoints(newTarget)
             print(approx)
             print(approx[0][1] + approx[1][1])
             warpedHeight = int(((approx[3][1]-approx[1][1]) + (approx[2][1] - approx[0][1])) / 2)
@@ -59,7 +65,7 @@ if os.path.exists(imagePath):
 
             M = cv2.getPerspectiveTransform(approx,pts2)
             dest = cv2.warpPerspective(original,M,(warpedWidth,warpedHeight))
-            
+            destHeight, destWidth, _ = dest.shape
             cv2.drawContours(image, [target], -1, (0, 255, 0), 2)
             dest = cv2.cvtColor(dest, cv2.COLOR_BGR2GRAY)
             
@@ -97,7 +103,7 @@ if os.path.exists(imagePath):
             print('outputting dest ... done')
             textExtractPath = outputPath + 'dest_' + imageName
             dest = cv2.copyMakeBorder(dest, top, bottom, left, right, cv2.BORDER_CONSTANT, value = [0, 0, 0])
-            cv2.imwrite(outputPath + 'dest_' + imageName, dest)
+            cv2.imwrite(outputPath + 'dest_' + imageName, imutils.resize(dest, origHeight))
     except NameError:
         print('page not found in image')
     print('page extraction ... done')
@@ -126,9 +132,16 @@ if os.path.exists(imagePath):
         crop = support.findOptimalComponents(contours, edges)
         crop = support.padCrop(crop, contours, edges, borderContour)
         crop = [int(x / scale) for x in crop]
+        print('outputting detection boxes ... done')
+        #support.textDetection(textExtractPath) <-- doesn't work
+        #support.textDetection2(textExtractPath) <-- doesn't work
+        
         print('outputting text ... done')
         textImage = tImage.crop(crop)
-        textImage.save(outputPath + 'text_' + imageName)
+        textImagePath = outputPath + 'text_' + imageName
+        textImage.save(textImagePath)
+        retImage = support.textDetection3(textImagePath, outputPath)
+        cv2.imwrite(outputPath + 'detected_text_' + imageName, retImage)
 else:
     print('file not found')
 print ('\nprogram done')

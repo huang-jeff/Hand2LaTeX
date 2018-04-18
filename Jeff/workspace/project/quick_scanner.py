@@ -29,7 +29,7 @@ if os.path.exists(imagePath):
     image = cv2.imread(imagePath)
     ratio = image.shape[0] / 500.0
     original = image.copy()
-    image = imutils.resize(image, height = 500)
+    image = imutils.resize(image, height = 1000)
     
     grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     grayscale = cv2.GaussianBlur(grayscale, (5, 5), 0)
@@ -50,6 +50,7 @@ if os.path.exists(imagePath):
     cv2.drawContours(image, screenCnt, -1, (0, 255, 0), 5)
     
     cv2.imshow('Image', image)
+    cv2.imwrite(outputPath + 'dottedDetect.jpg', image)
     cv2.imshow('Edged', edged)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
