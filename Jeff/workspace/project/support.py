@@ -290,6 +290,60 @@ def textDetection2(imagePath):
     cv2.imshow('detection result', image)
     cv2.waitKey()
     return image;
+
+def find_if_close(cnt1,cnt2):
+    row1,row2 = cnt1.shape[0],cnt2.shape[0]
+    arr_ct1_x = [x[0][0] for x in cnt1]
+    arr_ct1_y = [x[0][1] for x in cnt1]
+    ct1_x_min_max = [min(arr_ct1_x), max(arr_ct1_x)]
+    ct1_y_min_max = [min(arr_ct1_y), max(arr_ct1_y)]
+    arr_ct2_x = [x[0][0] for x in cnt2]
+    arr_ct2_y = [x[0][1] for x in cnt2]
+    ct2_x_min_max = [min(arr_ct2_x), max(arr_ct2_x)]
+    ct2_y_min_max = [min(arr_ct2_y), max(arr_ct2_y)]
+    for i in range(0,row1,2):
+        for j in range(0,row2,2):
+            ct1_x, ct2_x, ct1_y, ct2_y = cnt1[i][0][0], cnt2[j][0][0], cnt1[i][0][1], cnt2[j][0][1]
+            dist_x = abs(ct1_x-ct2_x)
+            dist_y = abs(ct1_y-ct2_y)
+            if dist_x < 50 and dist_y < 25 :
+                return True
+            elif ct1_x < ct2_x_min_max[1] and ct1_x > ct2_x_min_max[0] and ct1_y < ct2_y_min_max[1] and ct1_y > ct2_y_min_max[0]:
+                return True
+            elif ct2_x < ct1_x_min_max[1] and ct2_x > ct1_x_min_max[0] and ct2_y < ct1_y_min_max[1] and ct2_y > ct1_y_min_max[0]:
+                return True
+            elif i==row1-1 and j==row2-1:
+                return False
+
+def combineContours(contours):
+    LENGTH = len(contours)
+    status = np.zeros((LENGTH,1))
+    combined = False
+    for i,cnt1 in enumerate(contours):
+        x = i    
+        if i != LENGTH-1:
+            for j,cnt2 in enumerate(contours[i+1:]):
+                x = x+1
+                dist = find_if_close(cnt1,cnt2)
+                if dist == True:
+                    combined = True
+                    val = min(status[i],status[x])
+                    status[x] = status[i] = val
+                else:
+                    if status[x]==status[i]:
+                        status[x] = i+1
+
+    unified = []
+    maximum = int(status.max())+1
+    for i in range(maximum):
+        pos = np.where(status==i)[0]
+        if pos.size != 0:
+            cont = np.vstack(contours[i] for i in pos)
+            hull = cv2.convexHull(cont)
+            unified.append(hull)
+    if combined:
+        unified = combineContours(unified)
+    return unified
     
 def textDetection3(imagePath, outputPath):
     image = cv2.imread(imagePath)
@@ -305,6 +359,7 @@ def textDetection3(imagePath, outputPath):
     cv2.waitKey(0)
     im2, ctrs, _ = cv2.findContours(img_dilation.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     sorted_ctrs = sorted(ctrs, key=lambda ctr: cv2.boundingRect(ctr)[0])
+    sorted_ctrs = combineContours(sorted_ctrs)
     for i, ctr in enumerate(sorted_ctrs):
         x, y, w, h = cv2.boundingRect(ctr)
         roi = image[y:y+h, x:x+w]
