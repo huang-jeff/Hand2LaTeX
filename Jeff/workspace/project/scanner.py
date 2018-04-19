@@ -9,7 +9,7 @@ import os.path
 import imutils
 from skimage.filters import threshold_local
 from project import support
-
+import sys, traceback
 from PIL import Image
 from scipy.ndimage.filters import rank_filter
 #================================================================================================================
@@ -52,8 +52,8 @@ if os.path.exists(imagePath):
         if target is not None:
             print('page found in image')
             pageExtracted = True
+            target = support.scaleTarget(target, 0.015)
             newTarget = target * ratio
-            print(newTarget)
             #approx = support.cornerPoints(target)
             approx = support.cornerPoints(newTarget)
             print(approx)
@@ -106,6 +106,8 @@ if os.path.exists(imagePath):
             cv2.imwrite(outputPath + 'dest_' + imageName, imutils.resize(dest, origHeight))
     except NameError:
         print('page not found in image')
+    except:
+        print(traceback.print_exc(file=sys.stdout))
     print('page extraction ... done')
 #================================================================================================================
     print('\nstarting text extraction ...')
@@ -121,8 +123,8 @@ if os.path.exists(imagePath):
         borderContour = contours[borders[0][0]]
         edges = support.removeBorder(borderContour, edges)
     edges = 255 * (edges > 0).astype(np.uint8)
-    maxed_rows = rank_filter(edges, -4, size=(1, 20))
-    maxed_cols = rank_filter(edges, -4, size=(20, 1))
+    maxed_rows = rank_filter(edges, -2, size=(1, 20))
+    maxed_cols = rank_filter(edges, -2, size=(20, 1))
     debordered = np.minimum(np.minimum(edges, maxed_rows), maxed_cols)
     edges = debordered
     contours = support.findComponents(edges)

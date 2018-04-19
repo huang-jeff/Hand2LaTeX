@@ -10,12 +10,12 @@ perspectiveTransform(image, list) - extract the location of the corner points an
 from PIL import Image
 import numpy as np
 import cv2
+import sys, traceback
 from imutils.perspective import order_points
 
 def cornerPoints(corner):
     corner = corner.reshape((4,2))
     rect = np.zeros((4,2), dtype = np.float32)
-    
     add = corner.sum(axis = 1)
     rect[0] = corner[np.argmin(add)]
     rect[2] = corner[np.argmax(add)]
@@ -23,8 +23,42 @@ def cornerPoints(corner):
     diff = np.diff(corner, axis = 1)
     rect[1] = corner[np.argmin(diff)]
     rect[3] = corner[np.argmax(diff)]
-    
     return rect
+
+def scaleTarget(corner, shrink_scale):
+    try:
+        cornerNew = corner.reshape((4,2))
+        rect = np.zeros((4,2), dtype = np.float32)
+        add = cornerNew.sum(axis = 1)
+        rect[0] = cornerNew[np.argmin(add)]
+        rect[2] = cornerNew[np.argmax(add)]
+        
+        diff = np.diff(cornerNew, axis = 1)
+        rect[1] = cornerNew[np.argmin(diff)]
+        rect[3] = cornerNew[np.argmax(diff)]
+
+        (topLeft, topRight, bottomRight, bottomLeft) = rect
+        
+        widthA = np.sqrt(((bottomRight[0] - bottomLeft[0]) ** 2) + ((bottomRight[1] - bottomLeft[1]) ** 2))
+        widthB = np.sqrt(((topRight[0] - topLeft[0]) ** 2) + ((topRight[1] - topLeft[1]) ** 2))
+        maxWidth = max(int(widthA), int(widthB))
+        
+        heightA = np.sqrt(((topRight[0] - bottomRight[0]) ** 2) + ((topRight[1] - bottomRight[1]) ** 2))
+        heightB = np.sqrt(((topLeft[0] - bottomLeft[0]) ** 2) + ((topLeft[1] - bottomLeft[1]) ** 2))
+        maxHeight = max(int(heightA), int(heightB))
+
+
+        scale = shrink_scale
+        heightScale = scale * maxHeight
+        widthScale = scale * maxWidth
+        corner[0][0] = [rect[0][0] + widthScale, rect[0][1] + heightScale]
+        corner[1][0] = [rect[1][0] - widthScale, rect[1][1] + heightScale]
+        corner[2][0] = [rect[2][0] - widthScale, rect[2][1] - heightScale]
+        corner[3][0] = [rect[3][0] + widthScale, rect[3][1] - heightScale]
+    except:
+        print("BUGBUGUBUG")
+        traceback.print_exc(file=sys.stdout)
+    return corner
 
 def findName(name):
     indType = name.find('.')
@@ -271,7 +305,6 @@ def textDetection3(imagePath, outputPath):
     cv2.waitKey(0)
     im2, ctrs, _ = cv2.findContours(img_dilation.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     sorted_ctrs = sorted(ctrs, key=lambda ctr: cv2.boundingRect(ctr)[0])
-    
     for i, ctr in enumerate(sorted_ctrs):
         x, y, w, h = cv2.boundingRect(ctr)
         roi = image[y:y+h, x:x+w]
