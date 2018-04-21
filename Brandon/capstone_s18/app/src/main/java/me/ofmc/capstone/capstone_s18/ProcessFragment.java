@@ -1,5 +1,7 @@
 package me.ofmc.capstone.capstone_s18;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -109,7 +111,7 @@ public class ProcessFragment extends Fragment {
                                 writeConsole("WAITING");
                                 monitor.wait();
                                 if(exception){
-                                   break;
+                                    break;
                                 }
                             }
                             fileProcessed = false;
@@ -117,7 +119,7 @@ public class ProcessFragment extends Fragment {
                             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
                             String ip = sharedPref.getString("server_preference", null);
                             String port = sharedPref.getString("port_preference", null);
-
+                            Boolean addToGallery = sharedPref.getBoolean("gallery_preference", false);
                             URL url = new URL("http://" + ip + ":" + port + "/upload");
                             progressBar.setProgress(10);
                             setProcStatus(10 + "/" + progressBar.getMax());
@@ -176,7 +178,10 @@ public class ProcessFragment extends Fragment {
                             progressBar.setProgress(100);
                             setProcStatus(100 + "/" + progressBar.getMax());
                             writeConsole("Done saving");
-
+                            if(addToGallery){
+                                System.out.println("Adding to gallery");
+                                galleryAddPic();
+                            }
                             conn.disconnect();
                             FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                             Bundle args = new Bundle();
@@ -203,17 +208,17 @@ public class ProcessFragment extends Fragment {
             }
         });
 
-            Button retryButton = view.findViewById(R.id.retry);
-            retryButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    writeConsole("trying to wake");
-                    exception = false;
-                    synchronized (monitor) {
+        Button retryButton = view.findViewById(R.id.retry);
+        retryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                writeConsole("trying to wake" + exception);
+                exception = false;
+                synchronized (monitor) {
                     monitor.notifyAll();
-                    }
                 }
-            });
+            }
+        });
 
         thread.start();
     }
@@ -239,17 +244,17 @@ public class ProcessFragment extends Fragment {
             return;
         getActivity().runOnUiThread(new Runnable() {
             @Override
-        public void run() {
-            final TextView console =  view.findViewById(R.id.console);
-            final ScrollView textContainer=  view.findViewById(R.id.consoleContainer);
+            public void run() {
+                final TextView console =  view.findViewById(R.id.console);
+                final ScrollView textContainer=  view.findViewById(R.id.consoleContainer);
 
-            if(currentText == null){
-                currentText = textLine;
-            } else{
-                currentText += "\n" + textLine;
-            }
-            console.setText(currentText);
-            textContainer.fullScroll(View.FOCUS_DOWN);
+                if(currentText == null){
+                    currentText = textLine;
+                } else{
+                    currentText += "\n" + textLine;
+                }
+                console.setText(currentText);
+                textContainer.fullScroll(View.FOCUS_DOWN);
             }
         });
     }
@@ -260,9 +265,9 @@ public class ProcessFragment extends Fragment {
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-            final TextView procStatus = view.findViewById(R.id.procStatus);
-            procStatus.setText(status);
-        }
+                final TextView procStatus = view.findViewById(R.id.procStatus);
+                procStatus.setText(status);
+            }
         });
     }
 
@@ -272,7 +277,7 @@ public class ProcessFragment extends Fragment {
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Processing");
         view = inflater.inflate(R.layout.frag_process, container, false);
         progressBar = view.findViewById(R.id.progressBar);
-        folderName = getFileName(photoFile).split(Pattern.quote(new String(".")))[0] + "-" + System.currentTimeMillis();
+        folderName = getFileName(photoFile, getActivity()).split(Pattern.quote(new String(".")))[0] + "-" + System.currentTimeMillis();
 
         File thumbDir = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), File.separator + folderName + File.separator + "thumb.jpg");
         File jsonFile = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), File.separator + folderName + File.separator + "data.json");
@@ -343,6 +348,13 @@ public class ProcessFragment extends Fragment {
         super.onStop();
     }
 
+    private void galleryAddPic() {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        mediaScanIntent.setData(photoFile);
+        getActivity().sendBroadcast(mediaScanIntent);
+    }
+
+
     private void writeThumb(String folderName, File thumbDir){
 
         try {
@@ -383,17 +395,17 @@ public class ProcessFragment extends Fragment {
         writer.name("date").value(System.currentTimeMillis());
         writer.name("files");
         writer.beginArray();
-        writer.value(getFileName(photoFile));
+        writer.value(getFileName(photoFile, getActivity()));
         writer.endArray();
         writer.endObject();
         writer.close();
     }
 
 
-    public String getFileName(Uri uri) {
+    public static String getFileName(Uri uri, Activity activity) {
         String result = null;
         if (uri.getScheme().equals("content")) {
-            Cursor cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
+            Cursor cursor = activity.getContentResolver().query(uri, null, null, null, null);
             try {
                 if (cursor != null && cursor.moveToFirst()) {
                     result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));

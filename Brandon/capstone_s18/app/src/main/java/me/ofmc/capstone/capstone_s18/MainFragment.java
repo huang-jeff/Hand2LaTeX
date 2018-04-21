@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
+import com.yalantis.ucrop.UCrop;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -59,6 +60,7 @@ public class MainFragment extends Fragment {
     static final int REQUEST_TAKE_PHOTO = 1;
     private static int RESULT_LOAD_IMAGE = 2;
     private boolean photo_result = false;
+    private boolean return_crop = false;
     private File photoFile =null;
     private Uri photoURI = null;
     private ListView mListView;
@@ -198,14 +200,24 @@ public class MainFragment extends Fragment {
         if (requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
 //            Bitmap imageBitmap =  BitmapFactory.decodeFile(photoFile.getPath());
 //            mImageView.setImageBitmap(imageBitmap);
+            System.out.println("REQUEST PHOTO");
             photo_result = true;
-        } else if( requestCode == REQUEST_TAKE_PHOTO && resultCode != RESULT_OK){
+        } else if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
+            System.out.println("RESULT OK");
+            return_crop = true;
+            photoURI = UCrop.getOutput(data);
+        } else if (resultCode == UCrop.RESULT_ERROR) {
+            System.out.println("RESULT ERROR");
+            final Throwable cropError = UCrop.getError(data);
+        }else if( requestCode == REQUEST_TAKE_PHOTO && resultCode != RESULT_OK){
             System.out.println("CANCELLED?????");
             photoFile.delete();
         }    else if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
             photoURI = data.getData();
             photo_result = true;
 
+        } else{
+            System.out.println("WTF");
         }
     }
 
@@ -214,7 +226,20 @@ public class MainFragment extends Fragment {
         super.onResume();
         if(photo_result)
         {
+            System.out.println("IN PHOTO RESULT");
             photo_result=false;
+            File storageDir = new File(getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES), ProcessFragment.getFileName(photoURI, getActivity()));
+            Uri photoFile = Uri.fromFile(storageDir);
+            Uri fileOrigin = photoURI;
+
+            UCrop uCrop = UCrop.of(fileOrigin, photoFile);
+            UCrop.Options options = new UCrop.Options();
+            options.setFreeStyleCropEnabled(true);
+            uCrop.withOptions(options);
+            uCrop.start(getActivity(), MainFragment.this);
+        } else if(return_crop){
+            System.out.println("BACK FROM CROP");
+            return_crop = false;
             FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
             Bundle args = new Bundle();
             CameraActivity newFragment = CameraActivity.newInstance(photoURI);
@@ -223,6 +248,8 @@ public class MainFragment extends Fragment {
             transaction.addToBackStack(null);
             // Commit the transaction
             transaction.commit();
+        } else{
+            System.out.println("FALSE RESUME");
         }
     }
 
@@ -230,11 +257,10 @@ public class MainFragment extends Fragment {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
                 ".jpg",         /* suffix */
-                storageDir      /* directory */
+                getContext().getCacheDir()      /* directory */
         );
 
         // Save a file: path for use with ACTION_VIEW intents

@@ -51,11 +51,11 @@ public class CameraActivity extends Fragment {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.activity_capture, container, false);
         try {
-        ImageView mImageView = view.findViewById(R.id.imgDisplayImage);
-        final InputStream imageStream = getActivity().getContentResolver().openInputStream(photoFile);
-        Bitmap imageBitmap =  BitmapFactory.decodeStream(imageStream);
-        thumbImage = ThumbnailUtils.extractThumbnail(imageBitmap, THUMBSIZE, THUMBSIZE);
-        mImageView.setImageBitmap(imageBitmap);
+            ImageView mImageView = view.findViewById(R.id.imgDisplayImage);
+            final InputStream imageStream = getActivity().getContentResolver().openInputStream(photoFile);
+            Bitmap imageBitmap =  BitmapFactory.decodeStream(imageStream);
+            thumbImage = ThumbnailUtils.extractThumbnail(imageBitmap, THUMBSIZE, THUMBSIZE);
+            mImageView.setImageBitmap(imageBitmap);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             Toast.makeText(this.getContext(), "Something went wrong", Toast.LENGTH_LONG).show();

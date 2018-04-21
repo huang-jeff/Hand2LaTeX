@@ -8,7 +8,7 @@
         android:title="@string/basic_preferences">
 
         <CheckBoxPreference
-            android:key="checkbox_preference"
+            android:key="gallery_preference"
             android:title="@string/save_checkbox_preference"
             android:summary="@string/save_summary_checkbox_preference" />
 
