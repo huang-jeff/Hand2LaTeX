@@ -45,7 +45,6 @@ def imageprepare(argv):
   #newImage.save("sample.png")
 
   tv = list(newImage.getdata()) #get pixel values
-  print(tv)
   
   #normalize pixels to 0 and 1. 0 is pure white, 1 is pure black.
   tva = [ x for x in tv] 
@@ -53,7 +52,7 @@ def imageprepare(argv):
   return tva
 
 
-def predict():
+def predict(path, model, mapping):
     ''' Called when user presses the predict button.
         Processes the canvas and handles the image.
         Passes the loaded image into the neural network and it makes
@@ -61,8 +60,7 @@ def predict():
     '''
 
     # read parsed image back in 8-bit, black and white mode (L)
-    x = imageprepare('word-3/0.jpg')
-    print(x.shape)
+    x = imageprepare(path)
     ### Experimental
     # Crop on rows
     # x = crop(x)
@@ -72,7 +70,6 @@ def predict():
     # x = x.T
 
     # Visualize new array
-    imsave('resized.png', x)
     x = imresize(x,(28,28))
     x = np.invert(x)
 
@@ -93,6 +90,7 @@ def predict():
                 'confidence': str(max(out[0]) * 100)[:6]}
 
     print(response)
+    return response['prediction']
 
 if __name__ == '__main__':
     # Parse optional arguments
