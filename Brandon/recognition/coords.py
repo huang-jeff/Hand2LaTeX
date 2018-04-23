@@ -166,7 +166,10 @@ def main(file):
     stdout, stderr = p.communicate()
     stdout = stdout.decode('ascii')
     stdout = stdout.splitlines() 
-    latex = stdout[-1]
+    try:
+        latex = stdout[-1]
+    except:
+        latex = ''
     # tex, tex_pdf = make_document(latex, tmp_folder)
     # shutil.rmtree(tmp_folder)
     # return tex, tex_pdf

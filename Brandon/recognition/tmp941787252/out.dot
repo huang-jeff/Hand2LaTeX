@@ -1,0 +1,52 @@
+digraph mathExp{
+TermSSE0 -> TermB1 [label=S]
+TermB1 -> Sym2 [label=B]
+T12 [shape=box,label="1"]
+Sym2 -> T12
+TermB1 -> Term3 [label=B]
+Term3 -> Sym4 [label=H]
+Tx4 [shape=box,label="x"]
+Sym4 -> Tx4
+Term3 -> OpTerm5 [label=H]
+OpTerm5 -> OpBin6 [label=H]
+T/6 [shape=box,label="/"]
+OpBin6 -> T/6
+OpTerm5 -> UnTerm7 [label=H]
+UnTerm7 -> OpUn8 [label=H]
+Tm8 [shape=box,label="-"]
+OpUn8 -> Tm8
+UnTerm7 -> Term9 [label=H]
+Term9 -> Digit10 [label=H]
+T310 [shape=box,label="3"]
+Digit10 -> T310
+Term9 -> LetterMin11 [label=H]
+Tsinfty11 [shape=box,label="\infty"]
+LetterMin11 -> Tsinfty11
+TermSSE0 -> TermP12 [label=S]
+Term12 -> Sym13 [label=H]
+T113 [shape=box,label="1"]
+Sym13 -> T113
+Term12 -> OpTerm14 [label=H]
+OpTerm14 -> OpBin15 [label=H]
+Tm15 [shape=box,label="-"]
+OpBin15 -> Tm15
+OpTerm14 -> Term16 [label=H]
+Term16 -> LetterMin17 [label=H]
+Tm17 [shape=box,label="m"]
+LetterMin17 -> Tm17
+Term16 -> Term18 [label=H]
+Term18 -> TermSup19 [label=H]
+TermSup19 -> LetterMin20 [label=P]
+Tx20 [shape=box,label="x"]
+LetterMin20 -> Tx20
+TermSup19 -> Digit21 [label=P]
+T221 [shape=box,label="2"]
+Digit21 -> T221
+Term18 -> OpSym22 [label=H]
+OpSym22 -> OpBin23 [label=H]
+Te23 [shape=box,label="="]
+OpBin23 -> Te23
+OpSym22 -> Sym24 [label=H]
+T524 [shape=box,label="5"]
+Sym24 -> T524
+}
