@@ -48,17 +48,7 @@ def makeSVG(image, prefix, ind):
 def make_document(tex, folder):
     # Document with `\maketitle` command activated
     doc = Document()
-
-    doc.preamble.append(Command('title', 'Awesome Title'))
-    doc.preamble.append(Command('author', 'Anonymous author'))
-    doc.preamble.append(Command('date', NoEscape(r'\today')))
-    doc.append(NoEscape(r'\maketitle'))
-
-    with doc.create(Section('A section')):
-        doc.append(NoEscape('$' + tex + '$'))
-
-        with doc.create(Subsection('A subsection')):
-            doc.append('Also some crazy characters: $&#{}')
+    doc.append(NoEscape(tex))
 
     doc.generate_pdf(folder + 'tex_doc', clean_tex=False)
     tex_pdf = readPDF(folder)

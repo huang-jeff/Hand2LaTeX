@@ -86,8 +86,12 @@ def predict(path, model, mapping):
     out = model.predict(x)
 
     # Generate response
-    response = {'prediction': chr(mapping[(int(np.argmax(out, axis=1)[0]))]),
+    try:
+      response = {'prediction': chr(mapping[(int(np.argmax(out, axis=1)[0]))]),
                 'confidence': str(max(out[0]) * 100)[:6]}
+    except:
+      print(out)
+      response ={'prediction': '?'}
 
     print(response)
     return response['prediction']
