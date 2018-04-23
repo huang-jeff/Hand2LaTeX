@@ -1,0 +1,38 @@
+<resources>
+    <string name="app_name">Image to Latex</string>
+    <string name="my_docs">My Documents</string>
+    <string name="settings">Settings</string>
+    <string name="about">About</string>
+    <string name="capture_menu">Here is your selected image</string>
+    <string name="about_menu">Created by capstone 2018 team S18-34 at Rutgers University ECE Department.
+        \n\n
+        <b>Team Members:</b>
+        \n
+    Brandon Smith
+        \n
+    Suva Shahria
+        \n
+    Anthony Chou
+        \n
+    Jeffrey Huang</string>
+    <string name="settings_menu">You are on the settings page</string>
+    <string name="pic_desc">Preview for photo taken</string>
+    <string name="pic_name">Enter document name</string>
+    <string name="processing">Processing Status: </string>
+    <string name="console_title">Console</string>
+    <string name="thumbnail">Thumbnail</string>
+    <string name="basic_preferences">Basic Settings</string>
+    <string name="save_checkbox_preference">Save to Gallery</string>
+    <string name="save_summary_checkbox_preference">Upon capturing a picture, save the picture to the gallery.</string>
+    <string name="server_based_preferences">Server Settngs</string>
+    <string name="server_edittext_preference">Server IP</string>
+    <string name="server_summary_edittext_preference">The server to be used when connecting to process images.</string>
+    <string name="server_title_edittext_preference">Server IP</string>
+    <string name="port_edittext_preference">Server Port</string>
+    <string name="port_summary_edittext_preference">The port to be used when connecting to the above server.</string>
+    <string name="port_title_edittext_preference">Port</string>
+    <string name="hold_title">Document Options</string>
+    <string name="primary_title">Preview Options</string>
+    <string name="process">Process</string>
+    <string name="retry">Retry</string>
+</resources>

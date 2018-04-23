@@ -1,0 +1,13 @@
+*.iml
+.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class

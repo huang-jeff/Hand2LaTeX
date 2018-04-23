@@ -1,0 +1,45 @@
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<html>
+<div id="body-overlay"></div>
+<div class="bgColor">
+	<form id="uploadForm" action = "/upload" method="post" enctype="multipart/form-data">
+		<div id="targetOuter">
+			<div id="targetLayer"></div>
+			<div class="icon-choose-image" >
+			<input name="userImage" id="userImage" type="file" class="inputFile" />
+			</div>
+		</div>
+		<div>
+			<input type="submit" value="Upload Photo" class="btnSubmit" />
+		</div>
+	</form>
+</div>
+
+</html>
+
+<script type="text/javascript">
+// $(document).ready(function (e) {
+// 	$("#uploadForm").on('submit',(function(e) {
+// 		e.preventDefault();
+// 		$.ajax({
+//         	url: "http://localhost:5000/upload",
+// 			type: "POST",
+// 			data:  new FormData(this),
+// 			beforeSend: function(){$("#body-overlay").show();},
+// 			contentType: false,
+//     	    processData:false,
+// 			success: function(data)
+// 		    {
+// 			$("#targetLayer").html(data);
+// 			$("#targetLayer").css('opacity','1');
+// 			setInterval(function() {$("#body-overlay").hide(); },500);
+// 			},
+// 		  	error: function() 
+// 	    	{
+// 	    	} 	        
+// 	   });
+// 	}));
+// });
+</script>

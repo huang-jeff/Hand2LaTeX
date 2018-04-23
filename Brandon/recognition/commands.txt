@@ -1,0 +1,21 @@
+To compile autotrace
+install pstoedit-dev
+FOR MAC: brew install glib
+autoreconf --force --install || exit 1
+intltoolize --force || exit 1
+
+python3 clean.py andy.jpg
+
+autotrace  --output-format eps --output-file output.eps  --centerline --filter-iterations 20 --corner-threshold 120 --despeckle-level 15  cleaned.ppm
+
+inkscape output.eps -l output2.svg
+
+Then put in the converter to convert svg to scgink format
+THen run ./seshat -c Config/CONFIG -i SampleMathExps/try.scgink -o out.inkml -r render.pgm -d out.dot
+
+
+On Debian:
+tlmgr option repository ftp://tug.org/historic/systems/texlive/2014/tlnet-final 
+tlmgr update --self
+tlmgr install lastpage
+apt-get install texlive-fonts-recomnded
