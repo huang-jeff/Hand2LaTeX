@@ -107,7 +107,7 @@ def combineGroups(groups, width, threshold):
 
 def formBoundaries(groups, image, scale, width, height, path, image2):
     scalar_x = 0.01 * width * scale
-    scalar_y = 0.05 * height
+    scalar_y = 0.06 * height
     centers = []
     for ind, i in enumerate(groups):
         if 'letters' in i:
