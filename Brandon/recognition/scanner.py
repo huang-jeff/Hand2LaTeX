@@ -88,7 +88,6 @@ def main(image):
         
         top, bottom, left, right = [10] * 4
         print('outputting dest ... done')
-        dest = cv2.copyMakeBorder(dest, top, bottom, left, right, cv2.BORDER_CONSTANT, value = [0, 0, 0])
         dest = imutils.resize(dest, origHeight)
         cropHeight, cropWidth = dest.shape
         dest = Image.fromarray(dest)

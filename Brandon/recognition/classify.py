@@ -39,7 +39,7 @@ def imageprepare(argv):
   """
   img = Image.open(argv)
   img = img.filter(ImageFilter.GaussianBlur(radius=2))
-  newImage = resizeimage.resize_contain(img, [64, 64]).convert('L')
+  newImage = resizeimage.resize_contain(img, [128, 128]).convert('L')
   newImage = newImage.point(lambda x: 0  if x<160 else 255, '1')
   
   #newImage.save("sample.png")
@@ -48,7 +48,7 @@ def imageprepare(argv):
   
   #normalize pixels to 0 and 1. 0 is pure white, 1 is pure black.
   tva = [ x for x in tv] 
-  tva = np.reshape(tva, (64, 64))
+  tva = np.reshape(tva, (128, 128))
   return tva
 
 

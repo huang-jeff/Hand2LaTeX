@@ -316,7 +316,7 @@ def find_if_close(cnt1,cnt2, height, width):
             ct1_x, ct2_x, ct1_y, ct2_y = cnt1[i][0][0], cnt2[j][0][0], cnt1[i][0][1], cnt2[j][0][1]
             dist_x = abs(ct1_x-ct2_x)
             dist_y = abs(ct1_y-ct2_y)
-            if dist_x / width < 0.015 and dist_y / height < 0.005 :
+            if dist_x / width < 0.015 and dist_y / height < 0.010 :
                 return True
             elif ct1_x < ct2_x_min_max[1] and ct1_x > ct2_x_min_max[0] and ct1_y < ct2_y_min_max[1] and ct1_y > ct2_y_min_max[0]:
                 return True
