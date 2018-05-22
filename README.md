@@ -1,4 +1,4 @@
-# Rutgers Capstone Project 2018
+# Hand2LaTeX
 
 Group Members:
  - Brandon Smith
